@@ -1,8 +1,8 @@
-fastapi==0.115.2
-uvicorn[standard]==0.30.6
+fastapi
+uvicorn[standard]
 pydantic==2.9.0
-pandas==2.2.2
+pandas
 numpy
 yfinance
 scipy
-pyarrow==16.1.0
+pyarrow
