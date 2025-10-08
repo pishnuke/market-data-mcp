@@ -1,15 +1,16 @@
 name: build-and-push
 
 on:
+  pull_request:
+    branches: [ master ]
+    types: [opened, synchronize, reopened]
   push:
     branches: [ master ]
     tags: [ 'v*' ]
-  workflow_dispatch:
 
-# Needed to push to GHCR with the default GITHUB_TOKEN
-permissions:
-  contents: read
-  packages: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-pr:
