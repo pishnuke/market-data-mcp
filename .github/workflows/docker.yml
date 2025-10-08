@@ -12,17 +12,46 @@ permissions:
   packages: write
 
 jobs:
-  docker:
+  build-pr:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up QEMU (multi-arch)
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
+      # Build only (no push) — fails fast if Dockerfile is broken
+      - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ghcr.io/${{ github.repository }}:ci-pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-and-push:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # needed to push to GHCR
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute tags
+        id: meta
+        run: |
+          SHORT=${GITHUB_SHA::7}
+          echo "short=$SHORT" >> $GITHUB_OUTPUT
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "rel=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -31,23 +60,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
-            type=ref,event=tag
-            type=sha
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
+      - name: Build & Push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ghcr.io/${{ env.IMAGE_NAME }}:sha-${{ steps.meta.outputs.short }}
+            ghcr.io/${{ env.IMAGE_NAME }}:edge
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Promote stable on release
+        if: steps.meta.outputs.is_release == 'true'
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: ghcr.io/${{ env.IMAGE_NAME }}:sha-${{ steps.meta.outputs.short }}
+          dst: |
+            ghcr.io/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.rel }}
+            ghcr.io/${{ env.IMAGE_NAME }}:stable
