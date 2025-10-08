@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "market-data-http": {
+      "transport": {"type": "http", "url": "http://127.0.0.1:8000"}
+    },
+    "market-data-local": {
+      "command": "uvicorn",
+      "args": ["main:app", "--host", "127.0.0.1", "--port", "8000"],
+      "env": {"DATA_DIR": "./data"}
+    }
+  }
+}
