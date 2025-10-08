@@ -1,0 +1,78 @@
+
+{
+  "name": "market-data",
+  "version": "0.1.0",
+  "description": "Market & Options Data MCP over HTTP (FastAPI)",
+  "transport": {
+    "type": "http",
+    "url": "http://localhost:8000"
+  },
+  "tools": [
+    {
+      "name": "get_ohlcv",
+      "method": "GET",
+      "path": "/get_ohlcv",
+      "params": {
+        "symbol": "string",
+        "timeframe": {"type": "string", "default": "1d"},
+        "start": {"type": "string", "optional": true},
+        "end": {"type": "string", "optional": true},
+        "adj": {"type": "boolean", "default": true}
+      }
+    },
+    {
+      "name": "get_options_chain",
+      "method": "GET",
+      "path": "/get_options_chain",
+      "params": {
+        "underlier": "string",
+        "expiry": {"type": "string", "optional": true},
+        "strike_min": {"type": "number", "optional": true},
+        "strike_max": {"type": "number", "optional": true},
+        "right": {"type": "string", "enum": ["call", "put"], "optional": true}
+      }
+    },
+    {
+      "name": "get_greeks",
+      "method": "POST",
+      "path": "/get_greeks",
+      "params": {
+        "contracts": {"type": "array", "items": "string", "optional": true},
+        "details": {"type": "array", "items": "object", "optional": true},
+        "at": {"type": "string", "optional": true},
+        "r": {"type": "number", "default": 0.0}
+      }
+    },
+    {
+      "name": "get_iv_surface",
+      "method": "GET",
+      "path": "/get_iv_surface",
+      "params": {
+        "underlier": "string",
+        "at": {"type": "string", "optional": true}
+      }
+    },
+    {
+      "name": "get_corporate_events",
+      "method": "GET",
+      "path": "/get_corporate_events",
+      "params": {
+        "symbol": "string",
+        "start": {"type": "string", "optional": true},
+        "end": {"type": "string", "optional": true}
+      }
+    },
+    {
+      "name": "make_dataset",
+      "method": "POST",
+      "path": "/make_dataset",
+      "params": {
+        "symbols": {"type": "array", "items": "string"},
+        "features": {"type": "array", "items": "string"},
+        "horizon": "string",
+        "window": "string",
+        "align": {"type": "string", "enum": ["market_open", "market_close"], "default": "market_close"}
+      }
+    }
+  ]
+}
