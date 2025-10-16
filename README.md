@@ -15,8 +15,8 @@ Run locally:
 
 Docker:
 ```
-  docker build -t market-data-mcp:latest .
-  docker run -p 8000:8000 --name market-data-mcp market-data-mcp:latest
+  docker build -t market-data-mcp:edge .
+  docker run -p 8000:8000 --name market-data-mcp market-data-mcp:edge
 ```
 
 Example curl:
