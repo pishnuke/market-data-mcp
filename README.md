@@ -21,8 +21,8 @@ Docker:
 
 Example curl:
 ```
-  curl "http://localhost:8000/get_ohlcv?symbol=AAPL&timeframe=1d&start=2024-01-01&end=2024-06-30"
-  curl -X POST http://localhost:8000/make_dataset -H 'Content-Type: application/json' -d '{
+  curl "http://market-data.verumnomen.com/get_ohlcv?symbol=AAPL&timeframe=1d&start=2024-01-01&end=2024-06-30"
+  curl -X POST http://market-data.verumnomen.com/make_dataset -H 'Content-Type: application/json' -d '{
     "symbols":["AAPL","NVDA"],
     "features":["ohlcv(1d,120d)","rv_park(5d)","ret_1d","iv30"],
     "horizon":"1d","window":"180d","align":"market_close"
